@@ -48,11 +48,12 @@ function Square(props) {
         history: [{
           squares: Array(9).fill(null)
         }],
+        stepNumber: 0,
         xIsNext: true
       };
     }
       handleClick = (idx) => {
-        const history = this.state.history;
+        const history = this.state.history.slice(0, this.state.stepNumber + 1);
         const current = history[history.length - 1];
         const squares = current.squares.slice(); //Makes a copy of squares
         if(calculateWinner(current.squares || squares[idx]))
@@ -65,16 +66,32 @@ function Square(props) {
                 squares: squares
               }
             ]),
+            stepNumber: history.length,
             xIsNext: !this.state.xIsNext
           });
         console.log(this.state.squares);
       }
       //Unlike the array push() method you might be more familiar with, 
       //the concat() method doesn’t mutate the original array, so we prefer it.
-    render() {
+      jumpTo(step){
+        this.setState({
+          stepNumber: step,
+          xIsNext: (step % 2) === 0,
+        });
+      }
+      render() {
       const history = this.state.history;
-      const current = history[history.length - 1];
+      const current = history[this.state.stepNumber];
       const winner = calculateWinner(current.squares);
+
+      const moves = history.map((val, index) => {
+        const description = `Go To Move # ${index}`;
+        return (
+          <li key = {index}>
+            <button onClick={() => this.jumpTo(index)}>{description}</button>
+            </li>
+        );
+      });
       let status;
       if(winner){
         status = `Winner is ${winner}`;
@@ -89,7 +106,7 @@ function Square(props) {
           </div>
           <div className="game-info">
             <div>{ status }</div>
-            <ol>{/* TODO */}</ol>
+            <ol>{moves}</ol>
           </div>
         </div>
       );
